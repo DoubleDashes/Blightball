@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blightball</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <script type="module">
+        import * as THREE from "./js/three.module.js";
+        import { GLTFLoader } from "./js/GLTFLoader.js";
+
+        const gltfLoader = new GLTFLoader();
+
+        let scene;
+        let renderer;
+
+        let camera;
+        let clock;
+        let light;
+
+        let width, height;
+        let lastTime = 0;
+
+        let blight, blightMixer;
+
+        function init() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0.09411764705882353, 0.043137254901960784, 0.00392156862745098);
+
+            renderer = new THREE.WebGLRenderer({antialias: true});
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.outputEncoding = THREE.sRGBEncoding;
+
+            let rendererElement = renderer.domElement;
+            document.body.appendChild(rendererElement);
+
+            let aspect = window.innerWidth / window.innerHeight;
+            width = aspect * 10;
+            height = 10;
+
+            camera = new THREE.OrthographicCamera(aspect * -5, aspect * 5, 5, -5, 5, 15);
+            camera.position.set(0, 10, 0);
+            camera.rotation.set(-90 * THREE.Math.DEG2RAD, 0, 0);
+            camera.updateProjectionMatrix();
+
+            clock = new THREE.Clock();
+
+            light = new THREE.AmbientLight( 0x222222 );
+            scene.add( light );
+
+            window.onresize = function () {
+                let aspect = window.innerWidth / window.innerHeight;
+                camera.left = aspect * -5;
+                camera.right = aspect * 5;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            };
+
+            loadModel("blight", model => {
+                console.log("Spawned");
+
+                blight = model.scene;
+                blight.rotateY(THREE.Math.DEG2RAD * 360 * Math.random());
+                scene.add(blight);
+
+                blightMixer = new THREE.AnimationMixer(model.scene);
+                let action = blightMixer.clipAction(model.animations[0]);
+                action.setLoop(THREE.LoopRepeat);
+                action.play();
+            });
+
+            update(lastTime);
+        }
+
+        function update(time) {
+            requestAnimationFrame(update);
+
+            const delta = (time - lastTime) / 1000;
+            lastTime = time;
+
+            if(blight) {
+                blight.translateZ(delta * 7);
+
+                let blightForward = new THREE.Vector3(0, 0, 1).applyEuler(blight.rotation);
+                let blightPosition = blight.position.clone().add(blightForward);
+
+                let halfWidth = width / 2;
+                let halfHeight = height / 2;
+
+                if (blightPosition.x <= -halfWidth) {
+                    bounce(blight, new THREE.Vector3(1, 0, 0));
+                    blight.position.x = -halfWidth;
+                }
+                if (blightPosition.x >= halfWidth) {
+                    bounce(blight, new THREE.Vector3(-1, 0, 0));
+                    blight.position.x = halfWidth;
+                }
+                if (blightPosition.z <= -halfHeight) {
+                    bounce(blight, new THREE.Vector3(0, 0, 1));
+                    blight.position.z = -halfHeight;
+                }
+
+                if (blightPosition.z >= halfHeight) {
+                    bounce(blight, new THREE.Vector3(0, 0, -1));
+                    blight.position.z = halfHeight;
+                }
+            }
+
+            if(blightMixer)
+                blightMixer.update(delta);
+            renderer.render(scene, camera);
+        }
+
+        function loadModel(modelName, onLoad) {
+            gltfLoader.load("./models/" + modelName + ".glb", onLoad, undefined, function (error) {
+                console.error(error);
+            });
+        }
+
+        function bounce(object, normal) {
+            let bounceDirection = new THREE.Vector3(0, 0, 1).applyEuler(object.rotation).reflect(normal);
+            object.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(
+                bounceDirection,
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(0, 1, 0)
+            ));
+        }
+
+        init()
+    </script>
+</body>
+</html>
