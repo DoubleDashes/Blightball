@@ -60,8 +60,6 @@
             };
 
             loadModel("blight", model => {
-                console.log("Spawned");
-
                 blight = model.scene;
                 blight.rotateY(THREE.Math.DEG2RAD * 360 * Math.random());
                 scene.add(blight);
