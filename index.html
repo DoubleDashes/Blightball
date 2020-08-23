@@ -53,9 +53,14 @@
 
             window.onresize = function () {
                 let aspect = window.innerWidth / window.innerHeight;
+
+                width = aspect * 10;
+                height = 10;
+
                 camera.left = aspect * -5;
                 camera.right = aspect * 5;
                 camera.updateProjectionMatrix();
+
                 renderer.setSize(window.innerWidth, window.innerHeight);
             };
 
