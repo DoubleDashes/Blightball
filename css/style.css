@@ -6,3 +6,13 @@ body {
 canvas {
     display: block;
 }
+
+#loading-text {
+    display: block;
+    position: absolute;
+    top: 10px;
+    width: 100%;
+    text-align: center;
+    z-index: 100;
+    color: white;
+}
