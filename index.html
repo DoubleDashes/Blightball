@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <h1 id="loading-text">Loading...</h1>
     <script type="module">
         import * as THREE from "./js/three.module.js";
         import { GLTFLoader } from "./js/GLTFLoader.js";
@@ -69,6 +70,9 @@
                 let action = blightMixer.clipAction(model.animations[0]);
                 action.setLoop(THREE.LoopRepeat);
                 action.play();
+
+                let loadingTextElement = document.getElementById("loading-text");
+                loadingTextElement.remove();
             });
 
             update(lastTime);
