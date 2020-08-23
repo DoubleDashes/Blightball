@@ -54,8 +54,10 @@
             window.onresize = function () {
                 let aspect = window.innerWidth / window.innerHeight;
 
-                width = aspect * 10;
+                width = 10 * aspect;
                 height = 10;
+
+                document.title = width;
 
                 camera.left = aspect * -5;
                 camera.right = aspect * 5;
